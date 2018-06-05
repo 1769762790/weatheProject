@@ -1,12 +1,12 @@
 <template>
   <div id="weather" ref="weather" v-cloak>
-    <div class="today" ref="today">
+    <div class="today" ref="today" :class="classWind">
       <div class="currentCity">{{currentWeather.city}}</div>
       <div class="currentDate">今日 {{currentWeather.reporttime}} （实时：{{currentWeather.temperature}}℃）</div>
       <img v-if="currentWeather.dayImg" :src="['../../static/img/'+currentWeather.dayImg]" class="weather-icon">
       <div class="todayWeather" v-if="currentWeather.daytemp">{{currentWeather.nighttemp}}~{{currentWeather.daytemp}}℃</div>
       <div class="weather">{{currentWeather.weather}} {{currentWeather.winddirection}}风</div>
-      <div class="pm">风力：{{currentWeather.daywindpower}}</div>
+      <div class="pm">风力：{{currentWeather.windpower}}级</div>
     </div>
     <div class="futureWeather" ref="future">
         <ul class="weatherList">
@@ -55,6 +55,18 @@ export default {
       currentIndex:'',//当前天气下标
       fCasts:[],//简化的未来天气
       isShow:false,//是否显示
+      classWind:{//天气背景图
+        forgbg:false,
+        hazebg:false,
+        snowbg:false,
+        rainbg:false,
+        cloudbg:false,
+        clearbg:false,
+        defaultbg:false,
+        thunderbg:false,
+        overcastbg:false,
+        sanddustbg:false,
+      }
     }
   },
   created () {
@@ -64,7 +76,6 @@ export default {
     //this.getLiveWeather()
     this.$http.all([this.getAllWeather(),this.getLiveWeather()])
       .then(this.$http.spread((acct,perms)=>{
-        console.log(perms)
       if (acct.data.status == 1){
         var data = acct.data
         this.futureWeather = data.forecasts[0]
@@ -73,25 +84,22 @@ export default {
           arr[index].week=this.handleWeek(arr[index].week)
           arr[index].img = this.weatherPic(arr[index].dayweather)
         })
-        console.log(this.fCasts)
       }
       if (perms.data.status == 1){
+        console.log(perms)
         var data = perms.data
-        console.log(data)
         this.currentWeather = data.lives[0]
         this.currentWeather.dayImg = this.weatherPic(this.currentWeather.weather)
-        console.log(this.currentWeather.windpower)
-        this.currentWeather.daywindpower = this.WindPower(this.currentWeather.windpower)
+        // this.currentWeather.daywindpower = this.WindPower(this.currentWeather.windpower)
         this.currentWeather.daytemp = this.futureWeather.casts[0].daytemp
         this.currentWeather.nighttemp = this.futureWeather.casts[0].nighttemp
         this.currentWeather.reporttime = this.reportTime(this.currentWeather.reporttime)
+        this.currentWeather.weather = this.currentWeather.weather
         console.log(this.currentWeather)
+        this.changeBg(this.currentWeather.weather)
       }
     }))
-  },
-  mounted() {
-    //计算底部高度
-    // this.initHeight()
+
   },
   methods:{
     //计算底部未来天气的总高度，铺满剩余空间
@@ -115,13 +123,13 @@ export default {
     /*
     * @params {String} key 高徳天气key
     * @params {String} city 高徳城市adcode
-    * @params {String} extensions 显示未来的天气
+    * @params {String} extensions 显示未来的天气 all代表所有
     * */
      getAllWeather () {
       return this.$http.get('http://restapi.amap.com/v3/weather/weatherInfo',{
         params:{
           key:'0602f554ccff56553199cb55a948d811',
-          city:'310101',
+          city:'370600',
           extensions:'all'
         }
       })
@@ -156,7 +164,7 @@ export default {
       return this.$http.get('http://restapi.amap.com/v3/weather/weatherInfo',{
         params:{
           key:'0602f554ccff56553199cb55a948d811',
-          city:'310101',
+          city:'370600',
         }
       })
       // .then((res)=>{
@@ -232,29 +240,30 @@ export default {
       return res;
     },
     /*天气图标*/
-    weatherPic(weather){
+    weatherPic(wea){
+      console.log(wea)
         var weatherIcon = ''
-        if (weather == '晴') {
+        if (wea == '晴') {
           weatherIcon = 'qing_0.png'
-        } else if (weather == '多云'){
+        } else if (wea == '多云'){
           weatherIcon = 'duoyun_0.png'
-        } else if (weather == '阴'){
+        } else if (wea == '阴'){
           weatherIcon = 'yin_0.png'
-        } else if (weather == '雷阵雨'){
+        } else if (wea == '雷阵雨'){
           weatherIcon = 'leizhenyu_0.png'
-        } else if (weather == '大雨'){
+        } else if (wea == '大雨'){
           weatherIcon = 'dayu_0.png'
-        } else if (weather == '小雪'){
+        } else if (wea == '小雪'){
           weatherIcon = 'xiaoxue_0.png'
-        } else if (weather == '阵雨'){
+        } else if (wea == '阵雨'){
           weatherIcon = 'zhenyu_0.png'
-        } else if (weather == '小雨'){
+        } else if (wea == '小雨'){
           weatherIcon = 'xiaoyu_0.png'
-        } else if (weather == '暴雨'){
+        } else if (wea == '暴雨'){
           weatherIcon = 'baoyu_0.png'
-        } else if (weather == '大雪'){
+        } else if (wea == '大雪'){
           weatherIcon = 'daxue_0.png'
-        } else if (weather == '雨夹雪'){
+        } else if (wea == '雨夹雪'){
           weatherIcon = 'yujiaxue_0.png'
         }
         return weatherIcon;
@@ -272,7 +281,33 @@ export default {
         var currentMonth = month.join('')
         var currentDay = day.join('')
         return currentMonth+'月'+currentDay+'日'
+      },
+    changeBg(weather){
+      for (let i in this.classWind) {
+        this.classWind[i] = false
       }
+      console.log(weather)
+      if (weather == '晴'){
+        this.classWind.clearbg = true
+      }else if (weather == '霾'){
+        this.classWind.hazebg = true
+      }else if (weather == '多云'){
+        this.classWind.cloudbg = true
+      }else if (weather == '阴天'){
+        this.classWind.overcastbg = true
+      }else if (weather == '轻雾'){
+        this.classWind.forgbg = true
+      }else if (weather == '阵雪'||'小雪'||'中雪'||'大雪'||'暴雪'){
+        this.classWind.snowbg = true
+      }else if (weather == '浮尘'||'扬沙'||'强沙尘暴'||'沙尘暴'){
+        this.classWind.sanddustbg = true
+      }else if (weather == '阵雨'||'小雨'||'中雨'||'大雨'||'暴雨'||'大暴雨'||'特大暴雨'){
+        this.classWind.rainbg = true
+      }else{
+        this.classWind.defaultbg = true
+      }
+      console.log(this.classWind)
+    }
     }
 }
 </script>
@@ -286,18 +321,60 @@ export default {
     width: 100%;
     height: 100%;
     background: linear-gradient(to bottom, #3e7dbe , #69aee5);
+    overflow: auto;
+    /*background-size: cover;*/
   }
   .today{
     display: flex;
     flex-direction: column;
     flex: 1;
-    height: 40vh;
+    height: 50.6vh;
     justify-items: center;
     align-items: center;
     color: #eee;
   }
+  .clearbg{
+    background: url("../../static/bg/sun.jpg") no-repeat;
+    background-size: cover;
+  }
+  .cloudbg{
+    background: url("../../static/bg/cloud.jpg") no-repeat;
+    background-size: cover;
+  }
+  .overcastbg{
+    background: url("../../static/bg/overcast.jpg") no-repeat;
+    background-size: cover;
+  }
+  .snowbg{
+    background: url("../../static/bg/snow.jpg") no-repeat;
+    background-size: cover;
+  }
+  .thunderbg{
+    background: url("../../static/bg/thunder.jpg") no-repeat;
+    background-size: cover;
+  }
+  .rainbg{
+    background: url("../../static/bg/rain.jpg") no-repeat;
+    background-size: cover;
+  }
+  .forgbg{
+    background: url("../../static/bg/fog.jpg") no-repeat;
+    background-size: cover;
+  }
+  .defaultbg{
+    background: url("../../static/bg/clear2.png") no-repeat;
+    background-size: cover;
+  }
+  .sanddustbg{
+    background: url("../../static/bg/sanddust.jpg") no-repeat;
+    background-size: cover;
+  }
+  .hazebg{
+    background: url("../../static/bg/haze.jpg") no-repeat;
+    background-size: cover;
+  }
   .currentCity{
-    margin:10px 0;
+    margin:5vh 0;
     font-size: 6vw;
   }
   .currentDate{
@@ -305,7 +382,7 @@ export default {
   }
   .weather-icon{
     width: 25vw;
-    height: 15vh;
+    height: 14vh;
   }
   .weatherPic img{
     width: 18.5633vw;
@@ -313,20 +390,21 @@ export default {
   }
   .todayWeather{
     font-size: 5vw;
-    margin-bottom:1vw;
+    margin-bottom:2vw;
   }
   .today .weather{
     font-size: 4.5vw;
-    margin: 1vw 0;
+    margin: 1vh 0;
   }
   .pm{
     font-size: 4.5vw;
-    margin: 1vw 0;
+    margin: 1vh 0;
   }
   .futureWeather{
     flex: 1;
     /*height: 100%;*/
     background: #64a7db;
+    box-shadow: 0px 1px 50px 3px dodgerblue;
   }
   .weatherList{
     list-style: none;
