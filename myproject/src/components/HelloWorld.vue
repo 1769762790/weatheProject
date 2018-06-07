@@ -41,6 +41,9 @@
           </li>
         </ul>
     </div>
+    <div class="article">
+      <p>天下事有难易乎？为之，则难者亦易矣；不为，则易者亦难矣。</p>
+    </div>
   </div>
 </template>
 
@@ -66,7 +69,9 @@ export default {
         thunderbg:false,
         overcastbg:false,
         sanddustbg:false,
-      }
+      },
+      key:'0602f554ccff56553199cb55a948d811',
+      currentCityCode:'110105'
     }
   },
   created () {
@@ -76,6 +81,8 @@ export default {
     //this.getLiveWeather()
     this.$http.all([this.getAllWeather(),this.getLiveWeather()])
       .then(this.$http.spread((acct,perms)=>{
+        //未来天气数据
+        console.log(acct)
       if (acct.data.status == 1){
         var data = acct.data
         this.futureWeather = data.forecasts[0]
@@ -86,11 +93,11 @@ export default {
         })
       }
       if (perms.data.status == 1){
+          //当天天气数据
         console.log(perms)
         var data = perms.data
         this.currentWeather = data.lives[0]
         this.currentWeather.dayImg = this.weatherPic(this.currentWeather.weather)
-        // this.currentWeather.daywindpower = this.WindPower(this.currentWeather.windpower)
         this.currentWeather.daytemp = this.futureWeather.casts[0].daytemp
         this.currentWeather.nighttemp = this.futureWeather.casts[0].nighttemp
         this.currentWeather.reporttime = this.reportTime(this.currentWeather.reporttime)
@@ -99,7 +106,7 @@ export default {
         this.changeBg(this.currentWeather.weather)
       }
     }))
-
+    this.getOneSestence();
   },
   methods:{
     //计算底部未来天气的总高度，铺满剩余空间
@@ -107,17 +114,17 @@ export default {
       let futureHeight = this.$refs.weather.offsetHeight-this.$refs.today.offsetHeight+'px';
       this.$refs.future.style.height = futureHeight;
     },
-    //点击给当前的天气添加样式并且控制显示与隐藏
+    //点击给当前点击的天气添加样式并且控制显示与隐藏
     change(index){
       this.currentIndex = index
       this.isShow = true
       //通过jq的节点动画显示当前点击的li
       $(this.$refs.evDay[index]).animate({
-        height: "31.97183vh"
+        height: "17rem"
       }, 500);
       //通过jq的节点动画隐藏当前点击的li的兄弟标签的高度
       $(this.$refs.evDay[index]).siblings().animate({
-        height: "12.32394vh"
+        height: "7rem"
       }, 500);
     },
     /*
@@ -128,8 +135,8 @@ export default {
      getAllWeather () {
       return this.$http.get('http://restapi.amap.com/v3/weather/weatherInfo',{
         params:{
-          key:'0602f554ccff56553199cb55a948d811',
-          city:'370600',
+          key:this.key,
+          city:this.currentCityCode,
           extensions:'all'
         }
       })
@@ -163,8 +170,8 @@ export default {
     getLiveWeather () {
       return this.$http.get('http://restapi.amap.com/v3/weather/weatherInfo',{
         params:{
-          key:'0602f554ccff56553199cb55a948d811',
-          city:'370600',
+          key:this.key,
+          city:this.currentCityCode,
         }
       })
       // .then((res)=>{
@@ -192,6 +199,20 @@ export default {
       // .catch((e)=>{
       //   console.log(e)
       // })
+    },
+    getCurrentCityCode(){
+      this.$http.get('')
+        .then((result) => {
+          console.log(result)
+        })
+    },
+    getOneSestence(){
+      this.$http.post('https://api.hibai.cn/api/index/index',{
+          TransCode: "030111",
+          OpenId: "123456789"
+      }).then(res=>{
+          console.log(res)
+        })
     },
     /*处理week*/
     handleWeek(w){
@@ -255,9 +276,9 @@ export default {
           weatherIcon = 'dayu_0.png'
         } else if (wea == '小雪'){
           weatherIcon = 'xiaoxue_0.png'
-        } else if (wea == '阵雨'){
+        } else if (wea == '阵雨' ){
           weatherIcon = 'zhenyu_0.png'
-        } else if (wea == '小雨'){
+        } else if (wea == '小雨' || '中雨'){
           weatherIcon = 'xiaoyu_0.png'
         } else if (wea == '暴雨'){
           weatherIcon = 'baoyu_0.png'
@@ -311,7 +332,6 @@ export default {
     }
 }
 </script>
-
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
   [v-cloak] {
@@ -324,11 +344,12 @@ export default {
     overflow: auto;
     /*background-size: cover;*/
   }
+
   .today{
     display: flex;
     flex-direction: column;
     flex: 1;
-    height: 50.6vh;
+    /*height: 28rem;*/
     justify-items: center;
     align-items: center;
     color: #eee;
@@ -374,31 +395,32 @@ export default {
     background-size: cover;
   }
   .currentCity{
-    margin:5vh 0;
-    font-size: 6vw;
+    margin:2.5rem 0;
+    font-size: 2.5rem;
   }
   .currentDate{
-    font-size: 4.5vw;
+    font-size: 1.5rem;
   }
   .weather-icon{
-    width: 25vw;
-    height: 14vh;
+    width: 8rem;
+    height: 8rem;
   }
   .weatherPic img{
-    width: 18.5633vw;
-    height: 10vh;
+    width: 6rem;
+    height: 6rem;
   }
   .todayWeather{
-    font-size: 5vw;
-    margin-bottom:2vw;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
   }
   .today .weather{
-    font-size: 4.5vw;
-    margin: 1vh 0;
+    font-size: 1.6rem;
+    margin: 0.5rem 0;
   }
   .pm{
-    font-size: 4.5vw;
-    margin: 1vh 0;
+    font-size: 1.4rem;
+    margin-top: 0.5rem;
+    margin-bottom: 3rem;
   }
   .futureWeather{
     flex: 1;
@@ -421,7 +443,7 @@ export default {
   }
   .itemWeather .mainInfo{
     display: flex;
-    height: 12.32394vh;
+    height: 7rem;
     /*padding: 5px 0;*/
     /*box-sizing: border-box;*/
   }
@@ -430,7 +452,7 @@ export default {
     flex: 1;
     align-items: center;
     justify-content: center;
-    font-size: 4vw;
+    font-size: 1.2rem;
   }
   .itemWeather{
     color: #eee;
@@ -441,7 +463,8 @@ export default {
   .hide{
     display: flex;
     width: 100%;
-    height: 25.688155vh;
+    padding-bottom: 2rem;
+    /*height: 15rem;*/
     background: rgba(117,180,219,.8);
   }
   .day,.daynight{
@@ -450,7 +473,7 @@ export default {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    font-size: 4vw;
+    font-size: 1.2rem;
   }
   .dayWeatherDetil,.nightWeatherDetil{
     display: flex;
@@ -463,8 +486,17 @@ export default {
     border-right: 1px solid cornflowerblue;
   }
   .dayTitle,.nightTitle{
-    font-size: 4.5vw;
+    font-size: 1.4rem;
     text-align: center;
-    margin: 1vh 0;
+    margin: 0.7rem 0;
+  }
+  .article{
+    width: 100%;
+    padding:3rem 1rem;
+    box-sizing: border-box;
+  }
+  .article p{
+    font-size: 1.5rem;
+    text-indent: 2rem;
   }
 </style>
