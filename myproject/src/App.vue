@@ -1,12 +1,16 @@
 <template>
   <div id="app">
-    <router-view/>
+    <weather></weather>
   </div>
 </template>
 
 <script>
+  import weather from './components/weather'
 export default {
-  name: 'App'
+  name: 'App',
+  components:{
+    weather
+  }
 }
 </script>
 
@@ -15,13 +19,13 @@ export default {
     margin: 0;
     padding: 0;
   }
-  body,html{
-    width: 100%;
-    height: 100%;
-    /*font-size: 62.5%;*/
-  }
-  #app{
-    width: 100%;
-    height: 100%;
-  }
+  /*body,html{*/
+    /*width: 100%;*/
+    /*height: 100%;*/
+    /*!*font-size: 62.5%;*!*/
+  /*}*/
+  /*#app{*/
+    /*width: 100%;*/
+    /*height: 100%;*/
+  /*}*/
 </style>
