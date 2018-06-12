@@ -85,10 +85,9 @@
     if(this.location){
       this.getCurrentCityLocation(this.location)
     }else {
-      this.location = '125.32,43.92'
+      this.location = '121.38,31.12'
       this.getCurrentCityLocation(this.location)
     }
-
     this.getOneSestence()//每日一句
   },
   methods:{
@@ -103,7 +102,7 @@
       }, 500);
 
     },
-    getCurrentCityLocation(locationAddress) {//获取城市经纬度，通过经纬度请求高徳api获得当前城市的adcode
+    getCurrentCityLocation(locationAddress) {//通过经纬度请求高徳api获得当前城市的adcode
       this.$http.get('http://restapi.amap.com/v3/geocode/regeo', {
         params: {
           location: locationAddress,
@@ -178,6 +177,14 @@
           console.log(e)
         })
     },
+    reportTime(time){//转换日期格式
+      var timearr = time.split(' ').slice(0,1).join('').replace(/-0/g,"-").split('-')
+      var month = timearr.slice(1,2)
+      var day = timearr.slice(2,3)
+      var currentMonth = month.join('')
+      var currentDay = day.join('')
+      return currentMonth+'月'+currentDay+'日'
+    },
     handleWeek(w){//星期转换
       let res = ''
       switch (w){
@@ -240,14 +247,6 @@
           break
       }
       return weatherIcon;
-    },
-    reportTime(time){//转换日期格式
-      var timearr = time.split(' ').slice(0,1).join('').replace(/-0/g,"-").split('-')
-      var month = timearr.slice(1,2)
-      var day = timearr.slice(2,3)
-      var currentMonth = month.join('')
-      var currentDay = day.join('')
-      return currentMonth+'月'+currentDay+'日'
     },
     changeBg(weather){//改变背景
       for (let i in this.classWind) {
